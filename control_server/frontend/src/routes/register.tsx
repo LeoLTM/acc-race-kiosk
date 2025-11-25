@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Flag, User, CheckCircle, Loader, AlertCircle } from 'lucide-react'
 import { useJoinQueue } from '../hooks/useQueue'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,8 @@ export const Route = createFileRoute('/register')({
 
 function RegisterPage() {
   const [playerName, setPlayerName] = useState('')
+  const [countdown, setCountdown] = useState(10)
+  const inputRef = useRef<HTMLInputElement>(null)
   const joinQueueMutation = useJoinQueue()
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -23,74 +25,104 @@ function RegisterPage() {
     }
   }
 
+  const handleReset = () => {
+    setPlayerName('')
+    setCountdown(10)
+    joinQueueMutation.reset()
+  }
+
   const isSuccess = joinQueueMutation.isSuccess
   const isLoading = joinQueueMutation.isPending
   const isError = joinQueueMutation.isError
 
+  // Auto-redirect countdown when success
+  useEffect(() => {
+    if (isSuccess) {
+      setCountdown(10)
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            handleReset()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      return () => clearInterval(timer)
+    }
+  }, [isSuccess])
+
+  // Auto-focus input when form is shown
+  useEffect(() => {
+    if (!isSuccess && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [isSuccess])
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/20 to-black text-white flex items-center justify-center p-4 md:p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-red-950/30 to-slate-900 text-white flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-red-600/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-3xl animate-pulse [animation-delay:1000ms]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-500/5 rounded-full blur-3xl" />
       </div>
       
-      <div className="max-w-3xl w-full relative z-10">
+      <div className="max-w-4xl w-full relative z-10">
         {/* Success State */}
         {isSuccess && joinQueueMutation.data && (
-          <Card className="bg-gray-800/50 backdrop-blur-sm border-green-500 border-4 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 shadow-2xl shadow-green-500/20">
-            <CardContent className="pt-10 pb-10 px-6 md:px-8">
-              <CheckCircle className="w-28 h-28 md:w-32 md:h-32 mx-auto mb-8 text-green-400 animate-in zoom-in duration-700 animate-[pulse_2s_ease-in-out_infinite]" />
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 text-green-400 leading-tight animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
-                Registration Successful!
+          <Card className="bg-slate-900/80 backdrop-blur-xl border-emerald-500 border-2 text-center shadow-2xl shadow-emerald-500/20">
+            <CardContent className="pt-12 pb-12 px-8 md:px-12">
+              <CheckCircle className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-emerald-400 leading-tight tracking-tight">
+                You're In!
               </h1>
-              <p className="text-2xl md:text-3xl text-gray-300 mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
-                Welcome to the track, <span className="font-bold text-white">{playerName}</span>!
+              <p className="text-xl md:text-2xl text-slate-300 mb-8 leading-relaxed">
+                Welcome to the track, <span className="font-bold text-white bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">{playerName}</span>
               </p>
 
-              <div className="bg-gray-900/70 rounded-xl p-8 mb-8 border-2 border-gray-700 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-500 hover:border-gray-600 transition-colors">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                  <div className="py-4 group hover:scale-105 transition-transform duration-300">
-                    <p className="text-gray-400 text-xl mb-3 font-semibold">Your Rig</p>
-                    <p className="text-6xl md:text-7xl font-bold text-red-400 group-hover:text-red-300 transition-colors">
+              <div className="bg-slate-950/60 rounded-2xl p-6 md:p-8 mb-8 border border-slate-700/50 hover:border-slate-600/50 transition-all backdrop-blur-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center">
+                  <div className="py-4 px-4 rounded-xl bg-slate-800/40 group hover:scale-105 hover:bg-slate-800/60 transition-all duration-300">
+                    <p className="text-slate-400 text-base md:text-lg mb-2 font-medium uppercase tracking-wider">Your Rig</p>
+                    <p className="text-5xl md:text-6xl font-black text-red-500 group-hover:text-red-400 transition-colors drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">
                       #{joinQueueMutation.data.rigId}
                     </p>
                   </div>
-                  <div className="py-4 group hover:scale-105 transition-transform duration-300">
-                    <p className="text-gray-400 text-xl mb-3 font-semibold">Queue Position</p>
-                    <p className="text-6xl md:text-7xl font-bold text-yellow-400 group-hover:text-yellow-300 transition-colors">
+                  <div className="py-4 px-4 rounded-xl bg-slate-800/40 group hover:scale-105 hover:bg-slate-800/60 transition-all duration-300">
+                    <p className="text-slate-400 text-base md:text-lg mb-2 font-medium uppercase tracking-wider">Position</p>
+                    <p className="text-5xl md:text-6xl font-black text-amber-500 group-hover:text-amber-400 transition-colors drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">
                       {joinQueueMutation.data.queuePosition === 0 
                         ? 'Next!' 
                         : `#${joinQueueMutation.data.queuePosition}`}
                     </p>
                   </div>
-                  <div className="py-4 group hover:scale-105 transition-transform duration-300">
-                    <p className="text-gray-400 text-xl mb-3 font-semibold">Player ID</p>
-                    <p className="text-lg font-mono text-gray-300 mt-3 break-all leading-relaxed group-hover:text-white transition-colors">
+                  <div className="py-4 px-4 rounded-xl bg-slate-800/40 group hover:scale-105 hover:bg-slate-800/60 transition-all duration-300">
+                    <p className="text-slate-400 text-base md:text-lg mb-2 font-medium uppercase tracking-wider">Player ID</p>
+                    <p className="text-sm md:text-base font-mono text-slate-300 mt-2 break-all leading-relaxed group-hover:text-white transition-colors">
                       {joinQueueMutation.data.playerId}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <Alert className="bg-yellow-500/10 border-yellow-500/30 border-2 mb-8 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-700">
-                <AlertCircle className="h-8 w-8 text-yellow-300" />
-                <div className="text-yellow-300 text-xl leading-relaxed">
-                  <strong className="text-2xl">Next Steps:</strong>
-                  <p className="mt-2">Head to Rig #{joinQueueMutation.data.rigId} and wait for your turn. 
-                  The rig operator will call you when it's time to race!</p>
+              <Alert className="bg-amber-500/10 border-amber-500/40 border mb-8 p-5 md:p-6 rounded-xl backdrop-blur-sm">
+                <AlertCircle className="h-6 w-6 md:h-7 md:w-7 text-amber-400" />
+                <div className="text-amber-200 text-base md:text-lg leading-relaxed">
+                  <strong className="text-lg md:text-xl font-bold block mb-1">Next Steps</strong>
+                  <p>Head to <span className="font-bold text-amber-100">Rig #{joinQueueMutation.data.rigId}</span> and wait for your turn. The rig operator will call you when it's time to race!</p>
                 </div>
               </Alert>
 
               <Button
-                onClick={() => {
-                  setPlayerName('')
-                  joinQueueMutation.reset()
-                }}
+                onClick={handleReset}
                 size="lg"
-                className="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold text-2xl py-8 px-12 h-auto min-h-[80px] w-full md:w-auto touch-manipulation animate-in fade-in slide-in-from-bottom-2 duration-500 delay-1000 hover:scale-105 active:scale-95 transition-transform shadow-lg hover:shadow-red-500/50"
+                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 active:from-red-700 active:to-red-800 text-white font-bold text-lg md:text-xl py-6 px-10 h-auto min-h-[60px] w-full md:w-auto touch-manipulation hover:scale-105 active:scale-95 transition-all shadow-lg hover:shadow-red-500/50 rounded-xl"
               >
-                Register Another Player
+                Register Another Player ({countdown}s)
               </Button>
             </CardContent>
           </Card>
@@ -98,27 +130,28 @@ function RegisterPage() {
 
         {/* Registration Form */}
         {!isSuccess && (
-          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700 border-4 animate-in fade-in slide-in-from-bottom-4 duration-500 shadow-2xl shadow-red-500/10 hover:border-gray-600 transition-all">
-            <CardHeader className="text-center pt-10 pb-8">
-              <Flag className="w-24 h-24 md:w-28 md:h-28 mx-auto mb-6 text-red-500 animate-in zoom-in duration-700 animate-[pulse_2s_ease-in-out_infinite]" />
-              <CardTitle className="text-5xl md:text-6xl text-white font-bold leading-tight animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">Join the Race</CardTitle>
-              <CardDescription className="text-gray-400 text-2xl md:text-3xl mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-300">
+          <Card className="bg-slate-900/80 backdrop-blur-xl border-slate-700/50 border-2 shadow-2xl shadow-red-500/10 hover:border-slate-600/50 transition-all">
+            <CardHeader className="text-center pt-12 pb-8">
+              <Flag className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-6 text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
+              <CardTitle className="text-4xl md:text-5xl text-white font-extrabold leading-tight tracking-tight">Join the Race</CardTitle>
+              <CardDescription className="text-slate-400 text-lg md:text-xl mt-3 font-medium">
                 Enter your name to get in the queue
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="px-6 md:px-8 pb-10">
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-500">
+            <CardContent className="px-6 md:px-10 pb-10">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
                   <label
                     htmlFor="playerName"
-                    className="block text-2xl font-bold text-gray-300 mb-4 uppercase tracking-wide"
+                    className="block text-sm md:text-base font-bold text-slate-300 mb-3 uppercase tracking-widest"
                   >
                     Driver Name
                   </label>
                   <div className="relative group">
-                    <User className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400 w-8 h-8 z-10 group-focus-within:text-red-400 transition-colors duration-300" />
+                    <User className="absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5 md:w-6 md:h-6 z-10 group-focus-within:text-red-400 transition-colors duration-300" />
                     <Input
+                      ref={inputRef}
                       type="text"
                       id="playerName"
                       value={playerName}
@@ -128,20 +161,20 @@ function RegisterPage() {
                       maxLength={50}
                       required
                       disabled={isLoading}
-                      className="pl-20 pr-6 py-8 bg-gray-900/70 border-gray-700 border-2 text-white placeholder-gray-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20 text-3xl h-auto rounded-xl touch-manipulation transition-all duration-300 hover:border-gray-600 focus:scale-[1.02]"
+                      className="pl-14 md:pl-16 pr-5 py-6 md:py-7 bg-slate-950/60 border-slate-700 border-2 text-white placeholder-slate-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20 text-xl md:text-2xl h-auto rounded-xl touch-manipulation transition-all duration-300 hover:border-slate-600 focus:scale-[1.02] font-medium backdrop-blur-sm"
                     />
                   </div>
-                  <p className="text-lg text-gray-500 mt-4 leading-relaxed">
+                  <p className="text-sm md:text-base text-slate-500 mt-3 leading-relaxed">
                     1-50 characters • This name will appear on the leaderboards
                   </p>
                 </div>
 
                 {isError && (
-                  <Alert className="bg-red-500/10 border-red-500 border-2 p-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <AlertCircle className="h-8 w-8 text-red-400" />
+                  <Alert className="bg-red-500/10 border-red-500/50 border p-5 rounded-xl backdrop-blur-sm">
+                    <AlertCircle className="h-6 w-6 md:h-7 md:w-7 text-red-400" />
                     <div>
-                      <p className="font-bold text-red-400 text-2xl">Registration Failed</p>
-                      <p className="text-xl text-gray-300 mt-2 leading-relaxed">
+                      <p className="font-bold text-red-400 text-lg md:text-xl">Registration Failed</p>
+                      <p className="text-base md:text-lg text-slate-300 mt-1 leading-relaxed">
                         {joinQueueMutation.error?.message || 'An error occurred. Please try again.'}
                       </p>
                     </div>
@@ -155,42 +188,22 @@ function RegisterPage() {
                     playerName.trim().length < 1 ||
                     playerName.trim().length > 50
                   }
-                  className="w-full py-8 h-auto min-h-[90px] bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:opacity-50 text-white font-bold text-3xl rounded-xl touch-manipulation transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-xl hover:shadow-red-500/50 disabled:hover:scale-100 animate-in fade-in slide-in-from-bottom-2 delay-700"
+                  className="w-full py-6 md:py-7 h-auto min-h-[70px] bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 active:from-red-700 active:to-red-800 disabled:from-slate-700 disabled:to-slate-800 disabled:opacity-50 text-white font-bold text-xl md:text-2xl rounded-xl touch-manipulation transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-xl hover:shadow-red-500/50 disabled:hover:scale-100 disabled:shadow-none"
                   size="lg"
                 >
                   {isLoading ? (
                     <>
-                      <Loader className="w-10 h-10 animate-spin mr-3" />
+                      <Loader className="w-7 h-7 md:w-8 md:h-8 animate-spin mr-3" />
                       Joining Queue...
                     </>
                   ) : (
                     <>
-                      <Flag className="w-10 h-10 mr-3 group-hover:animate-pulse" />
+                      <Flag className="w-7 h-7 md:w-8 md:h-8 mr-3" />
                       Join the Queue
                     </>
                   )}
                 </Button>
               </form>
-
-              <div className="mt-10 pt-8 border-t-2 border-gray-700 animate-in fade-in duration-500 delay-1000">
-                <h3 className="text-2xl font-bold text-gray-400 uppercase tracking-wide mb-6">
-                  Track Rules
-                </h3>
-                <ul className="space-y-5 text-xl text-gray-400 leading-relaxed">
-                  <li className="flex items-start gap-4 group hover:text-gray-300 transition-colors duration-300">
-                    <Badge variant="outline" className="text-red-500 border-red-500 text-3xl px-3 py-1 mt-1 group-hover:bg-red-500/10 transition-colors">•</Badge>
-                    <span>Be present at your assigned rig when called</span>
-                  </li>
-                  <li className="flex items-start gap-4 group hover:text-gray-300 transition-colors duration-300">
-                    <Badge variant="outline" className="text-red-500 border-red-500 text-3xl px-3 py-1 mt-1 group-hover:bg-red-500/10 transition-colors">•</Badge>
-                    <span>Respect other drivers and track officials</span>
-                  </li>
-                  <li className="flex items-start gap-4 group hover:text-gray-300 transition-colors duration-300">
-                    <Badge variant="outline" className="text-red-500 border-red-500 text-3xl px-3 py-1 mt-1 group-hover:bg-red-500/10 transition-colors">•</Badge>
-                    <span>Each session is limited to maintain fair queue times</span>
-                  </li>
-                </ul>
-              </div>
             </CardContent>
           </Card>
         )}
