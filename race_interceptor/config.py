@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""
+Configuration loader for Race Interceptor
+Loads and validates environment variables from .env file
+"""
+
+import os
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env file from the same directory as this script
+env_path = Path(__file__).parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
+
+class Config:
+    """Configuration class for Race Interceptor"""
+    
+    def __init__(self):
+        self.BACKEND_URL = self._get_required_env('BACKEND_URL')
+        self.BACKEND_PORT = self._get_required_env('BACKEND_PORT')
+        self.RIG_ID = self._get_required_env('RIG_ID')
+        
+        # Validate and parse RIG_ID as integer
+        try:
+            self.RIG_ID = int(self.RIG_ID)
+            if self.RIG_ID < 1:
+                raise ValueError("RIG_ID must be a positive integer")
+        except ValueError as e:
+            print(f"❌ Error: Invalid RIG_ID value '{self.RIG_ID}'. Must be a positive integer (1, 2, 3, etc.)")
+            print(f"   Details: {e}")
+            sys.exit(1)
+        
+        # Validate and parse BACKEND_PORT as integer
+        try:
+            self.BACKEND_PORT = int(self.BACKEND_PORT)
+            if not (1 <= self.BACKEND_PORT <= 65535):
+                raise ValueError("Port must be between 1 and 65535")
+        except ValueError as e:
+            print(f"❌ Error: Invalid BACKEND_PORT value '{self.BACKEND_PORT}'")
+            print(f"   Details: {e}")
+            sys.exit(1)
+        
+        # Construct full backend URL
+        self.BACKEND_BASE_URL = f"{self.BACKEND_URL}:{self.BACKEND_PORT}"
+    
+    def _get_required_env(self, key: str) -> str:
+        """Get required environment variable or exit with error"""
+        value = os.getenv(key)
+        if not value:
+            print(f"❌ Error: Required environment variable '{key}' is not set")
+            print(f"   Please create a .env file based on .env.example")
+            print(f"   Expected location: {env_path}")
+            sys.exit(1)
+        return value
+    
+    def __repr__(self):
+        return f"Config(BACKEND_BASE_URL='{self.BACKEND_BASE_URL}', RIG_ID={self.RIG_ID})"
+
+
+# Create singleton config instance
+config = Config()
+
+if __name__ == "__main__":
+    # Test configuration loading
+    print("Configuration loaded successfully:")
+    print(f"  Backend URL: {config.BACKEND_BASE_URL}")
+    print(f"  Rig ID: {config.RIG_ID}")
