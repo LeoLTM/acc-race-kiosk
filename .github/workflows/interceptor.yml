@@ -28,7 +28,7 @@ jobs:
             pyinstaller --onefile --name Interceptor interceptor/main.py
 
         - name: Upload artifact
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: Interceptor
             path: dist/Interceptor.exe
