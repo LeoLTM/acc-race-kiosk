@@ -94,38 +94,38 @@ pip install -r requirements.txt
 From the `interceptor/` directory, run:
 
 ```bash
-pyinstaller --onefile --windowed --name RaceInterceptor ac_nickname_interceptor.py
+pyinstaller --onefile --windowed --name Interceptor ac_nickname_interceptor.py
 ```
 
 **Build Options Explained**:
 - `--onefile` - Bundles everything into a single `.exe` file
 - `--windowed` - Hides the console window (GUI-only mode)
-- `--name RaceInterceptor` - Names the output file `RaceInterceptor.exe`
+- `--name Interceptor` - Names the output file `Interceptor.exe`
 
 For debugging purposes, you can omit `--windowed` to see console output:
 ```bash
-pyinstaller --onefile --name RaceInterceptor ac_nickname_interceptor.py
+pyinstaller --onefile --name Interceptor ac_nickname_interceptor.py
 ```
 
 ### 3. Advanced Build Options
 
 **Include additional data files** (e.g., icons, config templates):
 ```bash
-pyinstaller --onefile --windowed --name RaceInterceptor ^
+pyinstaller --onefile --windowed --name Interceptor ^
   --add-data ".env.example;." ^
   ac_nickname_interceptor.py
 ```
 
 **Add application icon**:
 ```bash
-pyinstaller --onefile --windowed --name RaceInterceptor ^
+pyinstaller --onefile --windowed --name Interceptor ^
   --icon=app_icon.ico ^
   ac_nickname_interceptor.py
 ```
 
 **Optimize executable size**:
 ```bash
-pyinstaller --onefile --windowed --name RaceInterceptor ^
+pyinstaller --onefile --windowed --name Interceptor ^
   --exclude-module matplotlib ^
   --exclude-module numpy ^
   ac_nickname_interceptor.py
@@ -135,16 +135,16 @@ pyinstaller --onefile --windowed --name RaceInterceptor ^
 
 After building, find your executable at:
 ```
-interceptor/dist/RaceInterceptor.exe
+interceptor/dist/Interceptor.exe
 ```
 
-The `build/` and `dist/` folders will be created during the build process. You only need to distribute `RaceInterceptor.exe`.
+The `build/` and `dist/` folders will be created during the build process. You only need to distribute `Interceptor.exe`.
 
 ### 5. Deployment
 
 To deploy to a racing rig:
 
-1. Copy `RaceInterceptor.exe` to the target machine (e.g., `C:\RaceKiosk\`)
+1. Copy `Interceptor.exe` to the target machine (e.g., `C:\RaceKiosk\`)
 2. Create a `.env` file **in the same directory** as the executable
 3. Configure the `.env` file with the rig's settings:
    ```env
@@ -152,21 +152,21 @@ To deploy to a racing rig:
    BACKEND_PORT=8080
    RIG_ID=1
    ```
-4. Run `RaceInterceptor.exe` - no Python installation required!
+4. Run `Interceptor.exe` - no Python installation required!
 
-**Important**: The `.env` file must be in the same folder as `RaceInterceptor.exe`. The application is configured to look for `.env` relative to the executable's location, not the current working directory.
+**Important**: The `.env` file must be in the same folder as `Interceptor.exe`. The application is configured to look for `.env` relative to the executable's location, not the current working directory.
 
 Example directory structure:
 ```
 C:\RaceKiosk\
-├── RaceInterceptor.exe
+├── Interceptor.exe
 └── .env
 ```
 
 ### 6. Build Troubleshooting
 
 **".env file not found" errors**:
-- Ensure `.env` is in the **same directory** as `RaceInterceptor.exe`
+- Ensure `.env` is in the **same directory** as `Interceptor.exe`
 - The application looks for `.env` next to the executable, not in the working directory
 - Do NOT place `.env` in `AppData\Local\Temp` or other system folders
 
@@ -174,7 +174,7 @@ C:\RaceKiosk\
 - PyInstaller may miss some dynamic imports
 - Add hidden imports explicitly:
   ```bash
-  pyinstaller --onefile --windowed --name RaceInterceptor ^
+  pyinstaller --onefile --windowed --name Interceptor ^
     --hidden-import=socketio ^
     --hidden-import=engineio ^
     ac_nickname_interceptor.py
@@ -187,7 +187,7 @@ C:\RaceKiosk\
 
 **Antivirus false positives**:
 - PyInstaller executables sometimes trigger antivirus warnings
-- Add exclusion for `RaceInterceptor.exe` in Windows Defender
+- Add exclusion for `Interceptor.exe` in Windows Defender
 - Sign the executable with a code signing certificate for production use
 
 ### 7. Clean Build Artifacts
@@ -195,7 +195,7 @@ C:\RaceKiosk\
 Remove build artifacts when done:
 ```bash
 rmdir /s /q build dist
-del RaceInterceptor.spec
+del Interceptor.spec
 ```
 
 For more details, see the [PyInstaller documentation](https://pyinstaller.org/en/v6.17.0/).
@@ -293,7 +293,7 @@ The client communicates with these backend endpoints:
 
 **ac_nickname_interceptor.py**
 - `RaceIniHandler` - File system event handler for hot phase watchdog
-- `RaceInterceptorUI` - Minimal tkinter UI with backend integration
+- `InterceptorUI` - Minimal tkinter UI with backend integration
 - State machine logic (FREE ↔ RACING transitions)
 
 ### Key Dependencies
