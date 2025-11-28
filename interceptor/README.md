@@ -94,7 +94,7 @@ pip install -r requirements.txt
 From the `interceptor/` directory, run:
 
 ```bash
-pyinstaller --onefile --windowed --name Interceptor ac_nickname_interceptor.py
+pyinstaller --onefile --windowed --name Interceptor main.py
 ```
 
 **Build Options Explained**:
@@ -104,7 +104,7 @@ pyinstaller --onefile --windowed --name Interceptor ac_nickname_interceptor.py
 
 For debugging purposes, you can omit `--windowed` to see console output:
 ```bash
-pyinstaller --onefile --name Interceptor ac_nickname_interceptor.py
+pyinstaller --onefile --name Interceptor main.py
 ```
 
 ### 3. Advanced Build Options
@@ -113,14 +113,14 @@ pyinstaller --onefile --name Interceptor ac_nickname_interceptor.py
 ```bash
 pyinstaller --onefile --windowed --name Interceptor ^
   --add-data ".env.example;." ^
-  ac_nickname_interceptor.py
+  main.py
 ```
 
 **Add application icon**:
 ```bash
 pyinstaller --onefile --windowed --name Interceptor ^
   --icon=app_icon.ico ^
-  ac_nickname_interceptor.py
+  main.py
 ```
 
 **Optimize executable size**:
@@ -128,7 +128,7 @@ pyinstaller --onefile --windowed --name Interceptor ^
 pyinstaller --onefile --windowed --name Interceptor ^
   --exclude-module matplotlib ^
   --exclude-module numpy ^
-  ac_nickname_interceptor.py
+  main.py
 ```
 
 ### 4. Locate the Built Executable
@@ -177,7 +177,7 @@ C:\RaceKiosk\
   pyinstaller --onefile --windowed --name Interceptor ^
     --hidden-import=socketio ^
     --hidden-import=engineio ^
-    ac_nickname_interceptor.py
+    main.py
   ```
 
 **Large executable size**:
@@ -205,7 +205,7 @@ For more details, see the [PyInstaller documentation](https://pyinstaller.org/en
 ### Running the Client
 
 ```bash
-python ac_nickname_interceptor.py
+python main.py
 ```
 
 Or on Windows:
@@ -291,7 +291,7 @@ The client communicates with these backend endpoints:
 - Request retry logic (3 attempts)
 - Event callback system for queue updates
 
-**ac_nickname_interceptor.py**
+**main.py**
 - `RaceIniHandler` - File system event handler for hot phase watchdog
 - `InterceptorUI` - Minimal tkinter UI with backend integration
 - State machine logic (FREE ↔ RACING transitions)

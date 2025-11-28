@@ -50,7 +50,7 @@ echo Setup Complete!
 echo =====================================
 echo.
 echo You can now run the interceptor with:
-echo     python ac_nickname_interceptor.py
+echo     python main.py
 echo.
 echo Or double-click: run_interceptor.bat
 echo.
