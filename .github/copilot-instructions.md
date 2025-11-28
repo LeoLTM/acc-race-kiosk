@@ -25,7 +25,7 @@ Queue-based racing session manager for Assetto Corsa across multiple racing rigs
 ### 3. Race Interceptor (`interceptor/`)
 - **Stack**: Python 3.6+, tkinter GUI, watchdog library
 - **Purpose**: Monitors `~/Documents/Assetto Corsa/cfg/race.ini` on each racing rig, intercepts Content Manager writes, replaces driver name with queued player
-- **Key Files**: `ac_nickname_interceptor.py` - Main application with `RaceIniHandler` and `NicknameInterceptorUI`
+- **Key Files**: `main.py` - Main application with `RaceIniHandler` and `NicknameInterceptorUI`
 
 ## Development Workflows
 
@@ -53,7 +53,7 @@ bun --bun run check                   # Prettier + ESLint fix
 ```bash
 cd interceptor
 python -m pip install watchdog        # Install dependencies
-python ac_nickname_interceptor.py     # Run kiosk UI
+python main.py     # Run kiosk UI
 ```
 
 ## Project-Specific Conventions
@@ -104,7 +104,7 @@ python ac_nickname_interceptor.py     # Run kiosk UI
 | `server/backend/src/api/user/userService.ts` | Example service pattern |
 | `server/frontend/src/routes/__root.tsx` | Root layout with devtools |
 | `server/frontend/src/main.tsx` | App entry, QueryClient setup |
-| `interceptor/ac_nickname_interceptor.py` | File watcher + GUI kiosk |
+| `interceptor/main.py` | File watcher + GUI kiosk |
 
 ## Testing
 

@@ -12,7 +12,7 @@ This works by:
 5. Returning to FREE state when user clicks "End Session"
 
 Usage:
-    python ac_nickname_interceptor.py
+    python main.py
     
 Requires:
     - .env file with BACKEND_URL, BACKEND_PORT, and RIG_ID

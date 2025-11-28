@@ -2,7 +2,7 @@
 title AC Nickname Interceptor
 echo Starting AC Nickname Interceptor...
 echo.
-python "%~dp0ac_nickname_interceptor.py"
+python "%~dp0main.py"
 
 if %errorlevel% neq 0 (
     echo.
