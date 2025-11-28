@@ -74,6 +74,132 @@ RIG_ID=1
 
 **Important**: `RIG_ID` must match a rig configured in the backend (1, 2, 3, etc.)
 
+## Building Standalone Executable
+
+You can build a standalone Windows executable that doesn't require Python to be installed on the racing rig.
+
+### 1. Install PyInstaller
+
+```bash
+pip install pyinstaller
+```
+
+Or add to `requirements.txt` and run:
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Build the Executable
+
+From the `interceptor/` directory, run:
+
+```bash
+pyinstaller --onefile --windowed --name RaceInterceptor ac_nickname_interceptor.py
+```
+
+**Build Options Explained**:
+- `--onefile` - Bundles everything into a single `.exe` file
+- `--windowed` - Hides the console window (GUI-only mode)
+- `--name RaceInterceptor` - Names the output file `RaceInterceptor.exe`
+
+For debugging purposes, you can omit `--windowed` to see console output:
+```bash
+pyinstaller --onefile --name RaceInterceptor ac_nickname_interceptor.py
+```
+
+### 3. Advanced Build Options
+
+**Include additional data files** (e.g., icons, config templates):
+```bash
+pyinstaller --onefile --windowed --name RaceInterceptor ^
+  --add-data ".env.example;." ^
+  ac_nickname_interceptor.py
+```
+
+**Add application icon**:
+```bash
+pyinstaller --onefile --windowed --name RaceInterceptor ^
+  --icon=app_icon.ico ^
+  ac_nickname_interceptor.py
+```
+
+**Optimize executable size**:
+```bash
+pyinstaller --onefile --windowed --name RaceInterceptor ^
+  --exclude-module matplotlib ^
+  --exclude-module numpy ^
+  ac_nickname_interceptor.py
+```
+
+### 4. Locate the Built Executable
+
+After building, find your executable at:
+```
+interceptor/dist/RaceInterceptor.exe
+```
+
+The `build/` and `dist/` folders will be created during the build process. You only need to distribute `RaceInterceptor.exe`.
+
+### 5. Deployment
+
+To deploy to a racing rig:
+
+1. Copy `RaceInterceptor.exe` to the target machine (e.g., `C:\RaceKiosk\`)
+2. Create a `.env` file **in the same directory** as the executable
+3. Configure the `.env` file with the rig's settings:
+   ```env
+   BACKEND_URL=http://192.168.1.100
+   BACKEND_PORT=8080
+   RIG_ID=1
+   ```
+4. Run `RaceInterceptor.exe` - no Python installation required!
+
+**Important**: The `.env` file must be in the same folder as `RaceInterceptor.exe`. The application is configured to look for `.env` relative to the executable's location, not the current working directory.
+
+Example directory structure:
+```
+C:\RaceKiosk\
+├── RaceInterceptor.exe
+└── .env
+```
+
+### 6. Build Troubleshooting
+
+**".env file not found" errors**:
+- Ensure `.env` is in the **same directory** as `RaceInterceptor.exe`
+- The application looks for `.env` next to the executable, not in the working directory
+- Do NOT place `.env` in `AppData\Local\Temp` or other system folders
+
+**"Module not found" errors during execution**:
+- PyInstaller may miss some dynamic imports
+- Add hidden imports explicitly:
+  ```bash
+  pyinstaller --onefile --windowed --name RaceInterceptor ^
+    --hidden-import=socketio ^
+    --hidden-import=engineio ^
+    ac_nickname_interceptor.py
+  ```
+
+**Large executable size**:
+- Default build includes entire Python standard library
+- Use `--exclude-module` for unused packages
+- Typical size: 15-25 MB for this application
+
+**Antivirus false positives**:
+- PyInstaller executables sometimes trigger antivirus warnings
+- Add exclusion for `RaceInterceptor.exe` in Windows Defender
+- Sign the executable with a code signing certificate for production use
+
+### 7. Clean Build Artifacts
+
+Remove build artifacts when done:
+```bash
+rmdir /s /q build dist
+del RaceInterceptor.spec
+```
+
+For more details, see the [PyInstaller documentation](https://pyinstaller.org/en/v6.17.0/).
+
 ## Usage
 
 ### Running the Client
