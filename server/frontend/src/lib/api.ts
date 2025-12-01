@@ -34,6 +34,15 @@ export interface JoinQueueResponse {
   queuePosition: number
 }
 
+export interface LapTime {
+  id: number
+  nickName: string
+  bestLapTimeMs: number
+  formattedTime: string
+  createdAt: string
+  updatedAt: string
+}
+
 // API client
 export const api = {
   // Get dashboard data (all rigs)
@@ -66,6 +75,23 @@ export const api = {
     if (!response.ok) {
       const error = await response.json()
       throw new Error(error.message || 'Failed to join queue')
+    }
+
+    const data = await response.json()
+    return data.responseObject
+  },
+
+  // Get all lap times
+  getLapTimes: async (): Promise<LapTime[]> => {
+    const response = await fetch(`${API_BASE_URL}/lap-times`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch lap times')
     }
 
     const data = await response.json()

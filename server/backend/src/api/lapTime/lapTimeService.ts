@@ -1,10 +1,24 @@
 import { StatusCodes } from "http-status-codes";
+import type { Server as SocketIOServer } from "socket.io";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { lapTimeRepository } from "./lapTimeRepository";
 import type { SubmitLapTimeRequest, SubmitLapTimeResponse, GetAllLapTimesResponse } from "./lapTimeModel";
 import type { LapTime } from "@/generated/prisma";
 
 export class LapTimeService {
+	private io: SocketIOServer | null = null;
+
+	setSocketIO(io: SocketIOServer): void {
+		this.io = io;
+	}
+
+	private async emitLapTimeUpdate(): Promise<void> {
+		if (this.io) {
+			const lapTimes = await lapTimeRepository.findAll();
+			this.io.emit("lap-times-update", { lapTimes: lapTimes.map((lt) => this.toLapTimeResponse(lt)) });
+		}
+	}
+
 	async getAllLapTimes(): Promise<ServiceResponse<GetAllLapTimesResponse | null>> {
 		try {
 			const lapTimes = await lapTimeRepository.findAll();
@@ -27,6 +41,8 @@ export class LapTimeService {
 					formattedTime: data.formattedTime,
 				});
 
+				await this.emitLapTimeUpdate();
+
 				return ServiceResponse.success("Lap time recorded", {
 					lapTime: this.toLapTimeResponse(newLapTime),
 					wasUpdated: true,
@@ -39,6 +55,8 @@ export class LapTimeService {
 					bestLapTimeMs: data.bestLapTimeMs,
 					formattedTime: data.formattedTime,
 				});
+
+				await this.emitLapTimeUpdate();
 
 				return ServiceResponse.success("New best lap time", {
 					lapTime: this.toLapTimeResponse(updatedLapTime),
