@@ -17,6 +17,8 @@ const envSchema = z.object({
 	COMMON_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(1000),
 
 	NUMBER_OF_RIGS: z.coerce.number().int().positive().default(2),
+
+	DATABASE_URL: z.string().default("file:./prisma/dev.db"),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Placeholder model - replace with actual models later
+model Placeholder {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+}
+
+// Lap time records for the leaderboard
+model LapTime {
+  id            Int      @id @default(autoincrement())
+  nickName      String   @unique
+  bestLapTimeMs Int
+  formattedTime String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
