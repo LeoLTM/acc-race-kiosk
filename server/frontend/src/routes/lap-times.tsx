@@ -71,12 +71,15 @@ function getRankColor(rank: number): string {
 function LapTimesPage() {
   const { data: lapTimes, isLoading, isError, error } = useLapTimes()
 
-  // Add rank to each lap time
+  // Sort by best lap time (ascending) and add rank
   const dataWithRank =
-    lapTimes?.map((lt, index) => ({
-      ...lt,
-      rank: index + 1,
-    })) ?? []
+    lapTimes
+      ?.slice()
+      .sort((a, b) => a.bestLapTimeMs - b.bestLapTimeMs)
+      .map((lt, index) => ({
+        ...lt,
+        rank: index + 1,
+      })) ?? []
 
   const table = useReactTable({
     data: dataWithRank,
