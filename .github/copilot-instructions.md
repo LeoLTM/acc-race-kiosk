@@ -7,12 +7,15 @@ Queue-based racing session manager for Assetto Corsa across multiple racing rigs
 ## Architecture (3 Components)
 
 ### 1. Control Server Backend (`server/backend/`)
-- **Stack**: Node.js/TypeScript, Express 5, Zod validation, OpenAPI docs
+- **Stack**: Node.js/TypeScript, Express 5, Zod validation, OpenAPI docs, Prisma 7 + SQLite
 - **Pattern**: Feature-based organization (`api/user/`, `api/healthCheck/`)
 - **Key Files**: 
   - `src/server.ts` - Express app setup with middleware chain
   - `src/common/models/serviceResponse.ts` - Standardized API responses
   - `src/common/utils/httpHandlers.ts` - Request validation with Zod
+  - `src/common/utils/prismaClient.ts` - Prisma client singleton with libsql adapter
+  - `prisma/schema.prisma` - Database schema definition
+  - `prisma.config.ts` - Prisma 7 configuration with datasource URL
 
 ### 2. Web UI (`server/frontend/`)
 - **Stack**: React 19, TanStack Router (file-based), TanStack Query, Tailwind CSS 4, shadcn/ui
@@ -37,6 +40,9 @@ bun run start:dev          # Dev mode with --watch (tsx)
 bun run build              # TypeScript compile + tsup bundle
 bun run test               # Run Vitest tests
 bun run check              # Biome format + lint
+bun run prisma:generate    # Generate Prisma client after schema changes
+bun run prisma:migrate     # Create and apply database migrations
+bun run prisma:studio      # Open Prisma Studio GUI for database
 ```
 
 ### Frontend Commands
@@ -64,6 +70,12 @@ python main.py     # Run kiosk UI
 3. **Validation**: Use `validateRequest(schema)` middleware with Zod schemas defined in model files (e.g., `GetUserSchema`)
 4. **OpenAPI**: Register routes in registry within router files using `@asteasolutions/zod-to-openapi`
 5. **Path Aliases**: Use `@/` for imports (e.g., `@/api/user/userModel`) - configured in `tsconfig.json`
+6. **Database (Prisma 7)**:
+   - Schema defined in `prisma/schema.prisma`, config in `prisma.config.ts`
+   - Uses `@prisma/adapter-libsql` for Bun compatibility
+   - Import client from `@/generated/prisma` (generated to `src/generated/prisma/`)
+   - Use singleton `prisma` from `@/common/utils/prismaClient`
+   - Run `bun run prisma:migrate` after schema changes
 
 ### Frontend Patterns
 1. **Routing**: Add route by creating file in `src/routes/` - TanStack Router auto-generates types
