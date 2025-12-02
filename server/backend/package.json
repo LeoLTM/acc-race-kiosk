@@ -17,7 +17,9 @@
 		"postinstall": "prisma generate",
 		"prisma:generate": "prisma generate",
 		"prisma:migrate": "prisma migrate dev",
-		"prisma:studio": "prisma studio"
+		"prisma:push": "prisma migrate deploy",
+		"prisma:studio": "prisma studio",
+		"prisma:seed": "bun run prisma/scripts/seed.ts"
 	},
 	"dependencies": {
 		"@asteasolutions/zod-to-openapi": "7.3.4",
