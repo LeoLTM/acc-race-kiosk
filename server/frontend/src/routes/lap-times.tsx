@@ -42,13 +42,13 @@ const columns = [
   columnHelper.accessor('formattedTime', {
     header: 'Best Time',
     cell: (info) => (
-      <span className="font-mono text-cyan-400">{info.getValue()}</span>
+      <span className="font-mono text-primary">{info.getValue()}</span>
     ),
   }),
   columnHelper.accessor('createdAt', {
     header: 'Date',
     cell: (info) => (
-      <span className="text-gray-400">
+      <span className="text-muted-foreground">
         {new Date(info.getValue()).toLocaleDateString()}
       </span>
     ),
@@ -58,13 +58,13 @@ const columns = [
 function getRankColor(rank: number): string {
   switch (rank) {
     case 1:
-      return 'text-yellow-400' // Gold
+      return 'text-yellow-500' // Gold
     case 2:
-      return 'text-gray-300' // Silver
+      return 'text-gray-400' // Silver
     case 3:
       return 'text-amber-600' // Bronze
     default:
-      return 'text-gray-400'
+      return 'text-muted-foreground'
   }
 }
 
@@ -88,7 +88,7 @@ function LapTimesPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/20 to-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -97,14 +97,14 @@ function LapTimesPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-400 hover:text-white hover:bg-gray-800"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 <ArrowLeft className="w-6 h-6" />
               </Button>
             </Link>
             <div className="flex items-center gap-3">
-              <Trophy className="w-10 h-10 text-yellow-400" />
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 bg-clip-text text-transparent">
+              <Trophy className="w-10 h-10 text-amber-500" />
+              <h1 className="text-4xl font-bold text-foreground">
                 Lap Times
               </h1>
             </div>
@@ -113,28 +113,28 @@ function LapTimesPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
           {isLoading ? (
             <div className="p-6 space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex gap-4">
-                  <Skeleton className="h-8 w-12 bg-gray-700" />
-                  <Skeleton className="h-8 w-48 bg-gray-700" />
-                  <Skeleton className="h-8 w-32 bg-gray-700" />
-                  <Skeleton className="h-8 w-24 bg-gray-700" />
+                  <Skeleton className="h-8 w-12 bg-muted" />
+                  <Skeleton className="h-8 w-48 bg-muted" />
+                  <Skeleton className="h-8 w-32 bg-muted" />
+                  <Skeleton className="h-8 w-24 bg-muted" />
                 </div>
               ))}
             </div>
           ) : isError ? (
             <div className="p-12 text-center">
-              <p className="text-red-400 text-lg">
+              <p className="text-destructive text-lg">
                 Failed to load lap times: {error?.message}
               </p>
             </div>
           ) : dataWithRank.length === 0 ? (
             <div className="p-12 text-center">
-              <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg">
+              <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg">
                 No lap times recorded yet. Be the first to set a time!
               </p>
             </div>
@@ -144,12 +144,12 @@ function LapTimesPage() {
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
                     key={headerGroup.id}
-                    className="border-gray-700 hover:bg-transparent"
+                    className="border-border hover:bg-transparent"
                   >
                     {headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
-                        className="text-gray-300 font-semibold bg-gray-800/80"
+                        className="text-muted-foreground font-semibold bg-muted"
                       >
                         {header.isPlaceholder
                           ? null
@@ -166,7 +166,7 @@ function LapTimesPage() {
                 {table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    className="border-gray-700 hover:bg-gray-700/30"
+                    className="border-border hover:bg-muted/50"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
@@ -185,9 +185,9 @@ function LapTimesPage() {
 
         {/* Stats */}
         {lapTimes && lapTimes.length > 0 && (
-          <div className="mt-6 text-center text-gray-400">
+          <div className="mt-6 text-center text-muted-foreground">
             <p>
-              Total entries: <span className="text-white">{lapTimes.length}</span>
+              Total entries: <span className="text-foreground">{lapTimes.length}</span>
             </p>
           </div>
         )}
