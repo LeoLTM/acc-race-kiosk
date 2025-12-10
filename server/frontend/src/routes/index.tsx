@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Flag, Gauge, UserPlus, Trophy } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export const Route = createFileRoute('/')({
@@ -26,7 +25,7 @@ function App() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
           <Link to="/register" className="block group">
             <Card className="bg-gradient-to-br from-red-600 to-red-800 border-red-500/50 hover:border-red-400 hover:scale-105 transition-all duration-300 shadow-2xl">
               <CardHeader>
@@ -60,70 +59,24 @@ function App() {
               </CardContent>
             </Card>
           </Link>
+
+          <Link to="/lap-times" className="block group">
+            <Card className="bg-gradient-to-br from-amber-600 to-yellow-700 border-amber-500/50 hover:border-yellow-400 hover:scale-105 transition-all duration-300 shadow-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-4 text-white text-3xl">
+                  <Trophy className="w-12 h-12" />
+                  Lap Times
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-200 text-lg">
+                  View the leaderboard and see who holds the fastest lap times
+                  on the track!
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
-
-        {/* Features */}
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-3xl font-bold text-center mb-8">
-            How It Works
-          </h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-              <CardContent className="pt-6">
-                <div className="bg-red-500/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-2xl font-bold text-white">1</span>
-                </div>
-                <h4 className="text-xl font-bold mb-2 text-white">Register</h4>
-                <p className="text-gray-400">
-                  Enter your name and get assigned to the fastest available racing
-                  rig queue.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-              <CardContent className="pt-6">
-                <div className="bg-red-500/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-2xl font-bold text-white">2</span>
-                </div>
-                <h4 className="text-xl font-bold mb-2 text-white">Wait Your Turn</h4>
-                <p className="text-gray-400">
-                  Check your queue position on the dashboard and head to your
-                  assigned rig when called.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-              <CardContent className="pt-6">
-                <div className="bg-red-500/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-2xl font-bold text-white">3</span>
-                </div>
-                <h4 className="text-xl font-bold mb-2 text-white">Race!</h4>
-                <p className="text-gray-400">
-                  Experience Assetto Corsa's realistic physics and compete for the
-                  best lap times!
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Stats Banner */}
-        <Card className="mt-16 bg-gradient-to-r from-red-600/20 via-red-500/20 to-orange-600/20 border-red-500/30 text-center">
-          <CardContent className="pt-8">
-            <Trophy className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
-            <h3 className="text-3xl font-bold mb-2 text-white">Ready to Race?</h3>
-            <p className="text-xl text-gray-300 mb-6">
-              Join dozens of racers competing for track supremacy
-            </p>
-            <Link to="/register">
-              <Button size="lg" className="bg-red-600 hover:bg-red-700 text-xl px-8 py-6 h-auto">
-                Get Started Now
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

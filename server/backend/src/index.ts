@@ -3,6 +3,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { env } from "@/common/utils/envConfig";
 import { app, logger } from "@/server";
 import { queueService } from "@/api/queue/queueService";
+import { lapTimeService } from "@/api/lapTime/lapTimeService";
 
 const httpServer = createServer(app);
 
@@ -14,8 +15,9 @@ const io = new SocketIOServer(httpServer, {
 	},
 });
 
-// Connect Socket.io to queue service
+// Connect Socket.io to services
 queueService.setSocketIO(io);
+lapTimeService.setSocketIO(io);
 
 // Socket.io connection handler
 io.on("connection", (socket) => {

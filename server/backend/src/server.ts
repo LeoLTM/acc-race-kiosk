@@ -5,6 +5,7 @@ import { pino } from "pino";
 import { healthCheckRouter } from "@/api/healthCheck/healthCheckRouter";
 import { userRouter } from "@/api/user/userRouter";
 import { queueRouter } from "@/api/queue/queueRouter";
+import { lapTimeRouter } from "@/api/lapTime/lapTimeRouter";
 import { openAPIRouter } from "@/api-docs/openAPIRouter";
 import errorHandler from "@/common/middleware/errorHandler";
 import requestLogger from "@/common/middleware/requestLogger";
@@ -31,6 +32,7 @@ app.use("/users", userRouter);
 app.use("/queue", queueRouter);
 app.use("/rigs", queueRouter);
 app.use("/dashboard", queueRouter);
+app.use("/lap-times", lapTimeRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
