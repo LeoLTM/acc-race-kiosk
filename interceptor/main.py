@@ -220,6 +220,7 @@ class RaceIniHandler(FileSystemEventHandler):
     def __init__(
         self,
         player_name: str,
+        race_ini_path: Path,
         on_injection_complete: Optional[InjectionCallback] = None,
     ) -> None:
         """
@@ -227,6 +228,7 @@ class RaceIniHandler(FileSystemEventHandler):
 
         Args:
             player_name: Name of player to inject into race.ini.
+            race_ini_path: Path to the race.ini file to monitor.
             on_injection_complete: Callback to call after successful injection.
         """
         super().__init__()
@@ -235,7 +237,7 @@ class RaceIniHandler(FileSystemEventHandler):
         self._on_injection_failed: Optional[InjectionCallback] = None
         self._last_modified_time: float = 0
         self._injection_completed = False
-        self._race_ini_path = self._get_race_ini_path()
+        self._race_ini_path = race_ini_path
 
     @property
     def on_injection_failed(self) -> Optional[InjectionCallback]:
@@ -246,11 +248,6 @@ class RaceIniHandler(FileSystemEventHandler):
     def on_injection_failed(self, callback: Optional[InjectionCallback]) -> None:
         """Set the injection failed callback."""
         self._on_injection_failed = callback
-
-    @staticmethod
-    def _get_race_ini_path() -> Path:
-        """Get the path to the race.ini file."""
-        return Path(os.path.expanduser("~")) / "Documents" / "Assetto Corsa" / "cfg" / "race.ini"
 
     def on_modified(self, event) -> None:
         """
@@ -414,13 +411,58 @@ class RaceIniHandler(FileSystemEventHandler):
 class WatchdogManager:
     """Manages the file system observer for race.ini interception."""
 
-    __slots__ = ("_observer", "_event_handler", "_cfg_dir")
+    __slots__ = ("_observer", "_event_handler", "_cfg_dir", "_race_ini_path")
 
     def __init__(self) -> None:
         """Initialize the watchdog manager."""
         self._observer: Optional[BaseObserver] = None
         self._event_handler: Optional[RaceIniHandler] = None
-        self._cfg_dir = Path(os.path.expanduser("~")) / "Documents" / "Assetto Corsa" / "cfg"
+        self._cfg_dir, self._race_ini_path = self._find_ac_config_dir()
+
+    @staticmethod
+    def _find_ac_config_dir() -> tuple[Path, Path]:
+        """
+        Find the Assetto Corsa config directory.
+        Checks multiple possible locations:
+        1. Standard Documents folder: ~/Documents/Assetto Corsa/cfg
+        2. OneDrive Documents (C:): ~/OneDrive/Documents/Assetto Corsa/cfg
+        3. OneDrive Documents (D:): D:/OneDrive/Documents/Assetto Corsa/cfg
+        4. OneDrive Documents (E:): E:/OneDrive/Documents/Assetto Corsa/cfg
+
+        Returns:
+            Tuple of (cfg_dir, race_ini_path) for the first existing location.
+
+        Raises:
+            FileNotFoundError: If no valid Assetto Corsa config directory is found.
+        """
+        home = Path(os.path.expanduser("~"))
+        
+        # List of possible paths to check
+        possible_paths = [
+            # Standard Documents folder
+            home / "Documents" / "Assetto Corsa" / "cfg",
+            # OneDrive Documents in user profile
+            home / "OneDrive" / "Documents" / "Assetto Corsa" / "cfg",
+            # OneDrive on different drives (common in Windows)
+            Path("D:/OneDrive/Documents/Assetto Corsa/cfg"),
+            Path("E:/OneDrive/Documents/Assetto Corsa/cfg"),
+        ]
+        
+        for cfg_dir in possible_paths:
+            race_ini = cfg_dir / "race.ini"
+            if cfg_dir.exists():
+                logger.info("Found Assetto Corsa config directory: %s", cfg_dir)
+                return cfg_dir, race_ini
+        
+        # If no existing directory found, return the standard path and log a warning
+        default_cfg_dir = home / "Documents" / "Assetto Corsa" / "cfg"
+        default_race_ini = default_cfg_dir / "race.ini"
+        logger.warning(
+            "No existing Assetto Corsa config directory found. "
+            "Will create and monitor standard path: %s",
+            default_cfg_dir
+        )
+        return default_cfg_dir, default_race_ini
 
     @property
     def is_active(self) -> bool:
@@ -445,6 +487,7 @@ class WatchdogManager:
 
         self._event_handler = RaceIniHandler(
             player_name=player_name,
+            race_ini_path=self._race_ini_path,
             on_injection_complete=on_complete,
         )
         self._event_handler.on_injection_failed = on_failed
@@ -454,6 +497,8 @@ class WatchdogManager:
         self._observer.start()
 
         logger.info(">>> Watchdog active - waiting for Content Manager to write race.ini...")
+        logger.info(">>> Monitoring directory: %s", self._cfg_dir)
+        logger.info(">>> Target file: %s", self._race_ini_path)
         logger.info(">>> Will inject player name: %s", player_name)
 
     def stop(self, join: bool = True) -> None:
