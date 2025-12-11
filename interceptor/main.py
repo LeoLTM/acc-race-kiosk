@@ -113,9 +113,9 @@ class TimingConfig:
     RECONNECT_DELAY_MS: int = 5000
     WATCHDOG_LAUNCH_DELAY_MS: int = 500
     DEBOUNCE_SECONDS: float = 0.5
-    FILE_WRITE_DELAY_SECONDS: float = 0.15
-    FILE_RETRY_DELAY_SECONDS: float = 0.1
-    MAX_FILE_RETRIES: int = 5
+    FILE_WRITE_DELAY_SECONDS: float = 0.3
+    FILE_RETRY_DELAY_SECONDS: float = 0.15
+    MAX_FILE_RETRIES: int = 8
     TIMER_UPDATE_MS: int = 1000
 
 
@@ -317,12 +317,18 @@ class RaceIniHandler(FileSystemEventHandler):
         """
         for attempt in range(TIMING.MAX_FILE_RETRIES):
             try:
-                with open(self._race_ini_path, "r", encoding="utf-8", errors="ignore") as f:
-                    return f.readlines()
-            except (PermissionError, OSError):
+                # Use binary mode first to avoid encoding issues, then decode
+                with open(self._race_ini_path, "rb") as f:
+                    content = f.read()
+                # Decode outside the file lock to minimize lock time
+                text = content.decode("utf-8", errors="ignore")
+                return text.splitlines(keepends=True)
+            except (PermissionError, OSError) as e:
                 if attempt < TIMING.MAX_FILE_RETRIES - 1:
+                    logger.debug("Attempt %d: Failed to read file (%s), retrying...", attempt + 1, e)
                     time.sleep(TIMING.FILE_RETRY_DELAY_SECONDS)
                 else:
+                    logger.error("Failed to read race.ini after %d attempts", TIMING.MAX_FILE_RETRIES)
                     raise
         return []  # Unreachable, but satisfies type checker
 
@@ -392,15 +398,22 @@ class RaceIniHandler(FileSystemEventHandler):
         Raises:
             OSError: If the file cannot be written after all retries.
         """
+        # Prepare content outside of file lock
+        content = "".join(lines).encode("utf-8", errors="ignore")
+        
         for attempt in range(TIMING.MAX_FILE_RETRIES):
             try:
-                with open(self._race_ini_path, "w", encoding="utf-8", errors="ignore") as f:
-                    f.writelines(lines)
+                # Use binary write for faster operation
+                with open(self._race_ini_path, "wb") as f:
+                    f.write(content)
+                    f.flush()  # Ensure data is written
                 return
-            except (PermissionError, OSError):
+            except (PermissionError, OSError) as e:
                 if attempt < TIMING.MAX_FILE_RETRIES - 1:
+                    logger.debug("Attempt %d: Failed to write file (%s), retrying...", attempt + 1, e)
                     time.sleep(TIMING.FILE_RETRY_DELAY_SECONDS)
                 else:
+                    logger.error("Failed to write race.ini after %d attempts", TIMING.MAX_FILE_RETRIES)
                     raise
 
 
@@ -469,12 +482,24 @@ class WatchdogManager:
         if self._observer is None:
             return
 
-        self._observer.stop()
-        if join:
-            self._observer.join()
+        observer_to_stop = self._observer
         self._observer = None
         self._event_handler = None
-        logger.info(">>> Watchdog stopped")
+        
+        # Stop observer in background to prevent UI freeze
+        def stop_observer_task():
+            try:
+                observer_to_stop.stop()
+                if join:
+                    observer_to_stop.join(timeout=2.0)
+                logger.info(">>> Watchdog stopped")
+            except Exception as e:
+                logger.warning("Error stopping watchdog: %s", e)
+        
+        if join:
+            threading.Thread(target=stop_observer_task, daemon=True).start()
+        else:
+            observer_to_stop.stop()
 
 
 # =============================================================================
@@ -1091,7 +1116,8 @@ class RaceInterceptorUI:
     def _on_injection_complete(self) -> None:
         """Handle successful race.ini injection."""
         logger.info(">>> Injection complete, stopping watchdog")
-        self._window.after(0, lambda: self._watchdog.stop(join=False))
+        # Stop watchdog in background to prevent UI freeze
+        threading.Thread(target=lambda: self._watchdog.stop(join=True), daemon=True).start()
         self._window.after(0, lambda: self._player_label.config(text="Name injected! Racing in progress..."))
 
     def _on_injection_failed(self) -> None:
@@ -1112,7 +1138,11 @@ class RaceInterceptorUI:
         """Handle window close event."""
         logger.info("Window closing, shutting down...")
         self._stop_timer()
-        self._watchdog.stop()
+        
+        # Stop watchdog without blocking UI
+        if self._watchdog.is_active:
+            threading.Thread(target=lambda: self._watchdog.stop(join=True), daemon=True).start()
+        
         self._backend.disconnect()
         logger.info("Shutdown complete")
         self._window.destroy()
